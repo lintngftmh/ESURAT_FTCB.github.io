@@ -805,7 +805,7 @@ function loadPerintahKerja() {
             <td>
                 <button class="btn-edit" onclick="editPerintahKerja(${item.id})">✏️ Edit</button>
                 <button class="btn-danger" onclick="deletePerintahKerja(${item.id})">🗑️ Hapus</button>
-                ${isAdmin ? `<button class="btn-print" onclick="printPerintahKerja(${item.id})">🖨️ Cetak</button>` : ''}
+                <button class="btn-print" onclick="printPerintahKerja(${item.id})">🖨️ Cetak</button>
             </td>
         `;
     });
@@ -1178,46 +1178,60 @@ function printPerintahKerja(id) {
     const item = data.find(d => d.id === id);
 
     if (item) {
-        const statusText = item.status === 'sedang_diproses' ? 'Sedang Diproses' : 'Sudah Diproses';
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Cetak Perintah Kerja</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; }
-                    .header { text-align: center; margin-bottom: 30px; }
-                    .title { font-size: 24px; font-weight: bold; }
-                    .subtitle { font-size: 14px; color: #666; }
-                    .content { margin-top: 20px; }
-                    .row { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-                    .label { font-weight: bold; width: 150px; display: inline-block; }
-                    @media print {
-                        body { margin: 0; padding: 20px; }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="title">E-SURAT APPS</div>
-                    <div class="subtitle">SURAT PERINTAH KERJA</div>
-                    <hr>
-                </div>
-                <div class="content">
-                    <div class="row"><span class="label">Tanggal:</span> ${item.tanggal}</div>
-                    <div class="row"><span class="label">Pemberi Perintah:</span> ${item.dari}</div>
-                    <div class="row"><span class="label">Keterangan:</span> ${item.keterangan}</div>
-                    <div class="row"><span class="label">Status:</span> ${statusText}</div>
-                    <div class="row"><span class="label">File Terlampir:</span> ${item.fileName || '-'}</div>
-                </div>
-                <div style="margin-top: 50px; text-align: right;">
-                    <p>Dicetak pada: ${new Date().toLocaleString()}</p>
-                </div>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
+        if (item.fileName && item.fileName.toLowerCase().endsWith('.pdf') && item.fileData) {
+            // Convert base64 to blob for better compatibility
+            const base64Data = item.fileData.split(',')[1];
+            const binaryString = window.atob(base64Data);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const fileURL = URL.createObjectURL(blob);
+            window.open(fileURL);
+        } else {
+            const statusText = item.status === 'sedang_diproses' ? 'Sedang Diproses' : 'Sudah Diproses';
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Cetak Perintah Kerja</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .title { font-size: 24px; font-weight: bold; }
+                        .subtitle { font-size: 14px; color: #666; }
+                        .content { margin-top: 20px; }
+                        .row { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+                        .label { font-weight: bold; width: 150px; display: inline-block; }
+                        @media print {
+                            body { margin: 0; padding: 20px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="title">E-SURAT APPS</div>
+                        <div class="subtitle">SURAT PERINTAH KERJA</div>
+                        <hr>
+                    </div>
+                    <div class="content">
+                        <div class="row"><span class="label">Tanggal:</span> ${item.tanggal}</div>
+                        <div class="row"><span class="label">Pemberi Perintah:</span> ${item.dari}</div>
+                        <div class="row"><span class="label">Keterangan:</span> ${item.keterangan}</div>
+                        <div class="row"><span class="label">Status:</span> ${statusText}</div>
+                        <div class="row"><span class="label">File Terlampir:</span> ${item.fileName || '-'}</div>
+                    </div>
+                    <div style="margin-top: 50px; text-align: right;">
+                        <p>Dicetak pada: ${new Date().toLocaleString()}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
     }
 }
 
