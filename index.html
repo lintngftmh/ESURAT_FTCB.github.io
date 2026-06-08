@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Surat Apps - Fakultas Teknik Cerdas dan Berkelanjutan</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="logo-container">
+                <div class="logo">
+                    <span class="logo-icon">📧</span>
+                </div>
+                <h1 class="app-title">E-SURAT APPS</h1>
+                <p class="subtitle instansi-name">FAKULTAS TEKNIK CERDAS DAN BERKELANJUTAN</p>
+            </div>
+            
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="admin@teknik.com / staff@teknik.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="password-wrapper" style="position: relative;">
+                    <input type="password" id="loginPassword" placeholder="Password" style="padding-right: 40px;">
+                    <span id="togglePassword" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 16px;" title="Tampilkan Password">👁️</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" style="display:none;">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">📧</span>
+                <div class="sidebar-brand-container">
+                    <div class="sidebar-brand">E-SURAT APPS</div>
+                    <div class="subtitle instansi-name" style="font-size: 10px; opacity: 0.7;">FAKULTAS TEKNIK</div>
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <button class="sidebar-link active" onclick="showSection('dashboard')">
+                    <span>📊</span> Dashboard
+                </button>
+                <button class="sidebar-link" onclick="showSection('suratMasuk')">
+                    <span>📥</span> Surat Masuk
+                </button>
+                <button class="sidebar-link" onclick="showSection('suratKeluar')">
+                    <span>📤</span> Surat Keluar
+                </button>
+                <button class="sidebar-link" onclick="showSection('perintahKerja')">
+                    <span>⚙️</span> Perintah Kerja
+                </button>
+                <button class="sidebar-link" onclick="showSection('logNotifikasi')">
+                    <span>🔔</span> Log Notifikasi
+                </button>
+                <button class="sidebar-link" onclick="syncAllFromCloud()" style="color: #0C599A; margin-top: 10px; border-top: 1px dashed #eee;">
+                    <span>☁️</span> Sinkron Awan
+                </button>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <span id="currentUserRole">👤 ROLE</span>
+                </div>
+                <button class="btn btn-danger btn-logout" onclick="handleLogout()" style="width: 100%;">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <div class="nav-brand">E-SURAT APPS</div>
+                <button class="menu-toggle" onclick="syncAllFromCloud()" title="Sinkron Data">☁️</button>
+            </header>
+
+            <div class="container">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="section">
+                    <h2>Dashboard</h2>
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">📥</div>
+                            <div class="stat-info">
+                                <h3>Total Surat Masuk</h3>
+                                <p id="totalSuratMasuk">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📤</div>
+                            <div class="stat-info">
+                                <h3>Total Surat Keluar</h3>
+                                <p id="totalSuratKeluar">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚙️</div>
+                            <div class="stat-info">
+                                <h3>Total Perintah Kerja</h3>
+                                <p id="totalPerintahKerja">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Uploads Section -->
+                    <div class="recent-uploads-container" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 25px;">
+                        <div class="section-header" style="margin-bottom: 20px;">
+                            <h3 style="color: #333; font-size: 18px; display: flex; align-items: center; gap: 10px;">
+                                <span>📁</span> Aktivitas Unggahan Terbaru
+                            </h3>
+                            <span class="badge" style="background: #e6f2fc; color: #0C599A; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Real-time</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pengunggah</th>
+                                        <th>Tipe Dokumen</th>
+                                        <th>Nomor Surat</th>
+                                        <th>Perihal / Tentang</th>
+                                        <th>Tanggal Upload</th>
+                                        <th>File</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentUploadsTable">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: #999; padding: 20px;">Belum ada dokumen yang diunggah.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Surat Masuk Section -->
+                <div id="suratMasukSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>Surat Masuk</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="searchMasuk" placeholder="Pencarian file..." onkeyup="filterTable('suratMasukTable', this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px; width: 200px;">
+                            <button class="btn btn-primary" onclick="showModal('masuk')">+ Tambah Surat Masuk</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No. Surat</th>
+                                    <th>Tanggal Upload</th>
+                                    <th>Unit Pengirim</th>
+                                    <th>Perihal</th>
+                                    <th>File</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suratMasukTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Surat Keluar Section -->
+                <div id="suratKeluarSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>Surat Keluar</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="searchKeluar" placeholder="Pencarian file..." onkeyup="filterTable('suratKeluarTable', this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px; width: 200px;">
+                            <button class="btn btn-primary" onclick="showModal('keluar')">+ Tambah Surat Keluar</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No. Surat</th>
+                                    <th>Tanggal Upload</th>
+                                    <th>Unit Tujuan</th>
+                                    <th>Perihal</th>
+                                    <th>File</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suratKeluarTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Perintah Kerja Section -->
+                <div id="perintahKerjaSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>Perintah Kerja</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="searchPerintah" placeholder="Pencarian file..." onkeyup="filterTable('perintahKerjaTable', this.value)" style="padding: 8px; border: 1px solid #ddd; border-radius: 8px; width: 200px;">
+                            <button class="btn btn-primary" id="btnTambahPerintah" onclick="showModalPerintahKerja()">+ Tambah Perintah Kerja</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Perintah Dari</th>
+                                    <th>Keterangan</th>
+                                    <th>File</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="perintahKerjaTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Log Notifikasi Section -->
+                <div id="logNotifikasiSection" class="section" style="display:none;">
+                    <div class="section-header">
+                        <h2>Log Notifikasi (Simulasi WhatsApp & Email)</h2>
+                        <button class="btn btn-danger" onclick="clearNotificationLogs()">🗑️ Bersihkan Log</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px; text-align: center;">No.</th>
+                                    <th>Pesan Notifikasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logNotifikasiTable">
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: #999; padding: 20px;">Belum ada log notifikasi.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Surat -->
+    <div id="suratModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Surat</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <input type="hidden" id="suratId">
+            <input type="hidden" id="suratJenis">
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>No. Surat</label>
+                    <input type="text" id="suratNo" required>
+                </div>
+                <div class="input-group" style="display:none;">
+                    <label>Tanggal Upload</label>
+                    <input type="date" id="suratTanggal" required>
+                </div>
+                <div class="input-group">
+                    <label id="labelUnit">Unit Pengirim/Tujuan</label>
+                    <input type="text" id="suratUnit" placeholder="Contoh: Unit Akademik, Unit Keuangan, dll" required>
+                </div>
+                <div class="input-group">
+                    <label>Perihal</label>
+                    <input type="text" id="suratPerihal" required>
+                </div>
+                <div class="input-group">
+                    <label>Upload File (Hanya PDF)</label>
+                    <input type="file" id="suratFile" accept=".pdf">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
+                <button class="btn btn-primary" onclick="saveSurat()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Perintah Kerja -->
+    <div id="perintahKerjaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Perintah Kerja</h3>
+                <span class="close" onclick="closePerintahKerjaModal()">&times;</span>
+            </div>
+            <input type="hidden" id="perintahId">
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="perintahTanggal" required>
+                </div>
+                <div class="input-group">
+                    <label>Pemberi Perintah</label>
+                    <input type="text" id="perintahDari" placeholder="Nama yang memberi perintah" required>
+                </div>
+                <div class="input-group">
+                    <label>Keterangan Perintah</label>
+                    <textarea id="perintahKeterangan" rows="3" required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Upload File (Hanya PDF)</label>
+                    <input type="file" id="perintahFile" accept=".pdf">
+                </div>
+                <div class="input-group" id="perintahStatusGroup">
+                    <label>Status</label>
+                    <select id="perintahStatus">
+                        <option value="sedang_diproses">Sedang Diproses</option>
+                        <option value="sudah_diproses">Sudah Diproses</option>
+                    </select>
+                    <span id="perintahStatusText" style="display:none; font-weight: bold; color: #333; background: #eee; padding: 8px; border-radius: 4px; border: 1px solid #ddd;"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePerintahKerjaModal()">Batal</button>
+                <button class="btn btn-primary" onclick="savePerintahKerja()">Simpan</button>
+            </div>
+        </div>
+    </div>
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="script.js?v=2.2"></script>
+</body>
+</html>
